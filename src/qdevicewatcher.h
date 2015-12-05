@@ -49,7 +49,7 @@ public:
 	bool start();
 	bool stop();
 	bool isRunning() const;
-
+    void* getHandle();
 	void appendEventReceiver(QObject* receiver);
 
 signals:

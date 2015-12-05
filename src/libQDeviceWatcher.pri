@@ -86,7 +86,7 @@ DEPENDPATH *= $$PROJECT_SRCPATH
 } else {
         #Add your additional configuration first. e.g.
 
-#	win32: LIBS += -lUser32
+        win32: LIBS += -lUser32
 # The following may not need to change
     !CONFIG(plugin) {
         #TEMPLATE = lib

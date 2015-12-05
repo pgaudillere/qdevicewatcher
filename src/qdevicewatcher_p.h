@@ -78,6 +78,9 @@ public:
 	void setWatcher(QDeviceWatcher *w) {watcher=w;}
     bool start(); //conflict with QThread::start()
 	bool stop();
+#if defined (Q_OS_WIN32)
+    HWND getHwnd();
+#endif
 
 	//Do not use Qt::DirectConnection. this thread is not watcher's thread!
 	void emitDeviceAdded(const QString& dev);
@@ -110,6 +113,7 @@ private:
 	int netlink_socket;
 #elif defined(Q_OS_WIN32)
 	HWND hwnd;
+
 #elif defined(Q_OS_WINCE)
 	HANDLE mQueueHandle;
 	HANDLE mNotificationHandle;

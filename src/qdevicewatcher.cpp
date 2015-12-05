@@ -23,6 +23,7 @@
 QDeviceWatcher::QDeviceWatcher(QObject* parent)
 	:QObject(parent),running(false),d_ptr(new QDeviceWatcherPrivate)
 {
+    zDebug("d_ptr: %x"; d_ptr);
 	Q_D(QDeviceWatcher);
 	d->setWatcher(this);
 }
@@ -37,6 +38,7 @@ QDeviceWatcher::~QDeviceWatcher()
 
 bool QDeviceWatcher::start()
 {
+    zDebug("QDeviceWatcher::start");
 	Q_D(QDeviceWatcher);
 	if (!d->start()) {
 		stop();
@@ -64,6 +66,16 @@ void QDeviceWatcher::appendEventReceiver(QObject *receiver)
 	d->event_receivers.append(receiver);
 }
 
+void* QDeviceWatcher::getHandle()
+{
+#if defined(Q_OS_WIN32)
+    return d_ptr->getHwnd();
+#else
+    return 0;
+#endif
+}
+
+
 void QDeviceWatcherPrivate::emitDeviceAdded(const QString &dev)
 {
 	if (!QMetaObject::invokeMethod(watcher, "deviceAdded", Q_ARG(QString, dev)))
@@ -84,6 +96,7 @@ void QDeviceWatcherPrivate::emitDeviceRemoved(const QString &dev)
 
 void QDeviceWatcherPrivate::emitDeviceAction(const QString &dev, const QString &action)
 {
+    zDebug("QDeviceWatcherPrivate::emitDeviceAction %s", action.toAscii().constData());
 	QString a(action.toLower());
 	if (a == QLatin1String("add"))
 		emitDeviceAdded(dev);
@@ -101,3 +114,4 @@ QDeviceChangeEvent::QDeviceChangeEvent(Action action, const QString &device) :
     m_action = action;
     m_device = device;
 }
+

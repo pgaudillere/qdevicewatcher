@@ -172,9 +172,9 @@ WM_DEVICECHANGE限制:
 */
 LRESULT CALLBACK dw_internal_proc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
-	if (message == WM_DEVICECHANGE) {
+  if (message == WM_DEVICECHANGE) {
 		DEV_BROADCAST_HDR *lpdb = (DEV_BROADCAST_HDR *)lParam;
-		zDebug("Device type address: %#x", lpdb);
+		zDebug("Device type address: %#x", lpdb);        
 		if (lpdb) {
 			if (lpdb->dbch_devicetype == DBT_DEVTYP_VOLUME) {
 				zDebug("DBT_DEVTYP_VOLUME");
@@ -185,15 +185,39 @@ LRESULT CALLBACK dw_internal_proc(HWND hwnd, UINT message, WPARAM wParam, LPARAM
 			} else if (lpdb->dbch_devicetype == DBT_DEVTYP_OEM) {
 				zDebug("DBT_DEVTYP_OEM");
 			} else {
-				zDebug("Unknow device type");
+                zDebug("Unknow device type: %d", lpdb->dbch_devicetype);
 			}
 		}
 
 		switch (wParam) {
 		case DBT_DEVNODES_CHANGED:
-			zDebug("DBT_DEVNODES_CHANGED message received, no extended info.");
-			break;
-		case DBT_QUERYCHANGECONFIG:
+        {
+            zDebug("DBT_DEVNODES_CHANGED message received, no extended info.");
+            QList<QDeviceChangeEvent *> events;
+            QString action_str("change");
+            QDeviceChangeEvent::Action action = QDeviceChangeEvent::Change;
+            action_str = "change";
+            action = QDeviceChangeEvent::Change;
+
+#ifdef GWLP_USERDATA
+                    QDeviceWatcherPrivate *watcher = (QDeviceWatcherPrivate *)GetWindowLongPtr(hwnd, GWLP_USERDATA);
+#else
+                    QDeviceWatcherPrivate *watcher = (QDeviceWatcherPrivate *)GetWindowLong(hwnd, GWL_USERDATA);
+#endif
+            zDebug("watcher : %x"; watcher );
+            watcher->emitDeviceAction("change", action_str);
+            if (!watcher->event_receivers.isEmpty())
+                events.append(new QDeviceChangeEvent(action, "change"));
+            if (!events.isEmpty() && !watcher->event_receivers.isEmpty()) {
+                foreach(QObject* obj, watcher->event_receivers) {
+                    foreach(QDeviceChangeEvent* event, events) {
+                        QCoreApplication::postEvent(obj, event, Qt::HighEventPriority);
+                    }
+                }
+            }
+        }
+            break;
+        case DBT_QUERYCHANGECONFIG:
 			zDebug("DBT_QUERYCHANGECONFIG message received, no extended info.");
 			break;
 		case DBT_CONFIGCHANGED:
@@ -380,6 +404,11 @@ bool QDeviceWatcherPrivate::init()
 
 void QDeviceWatcherPrivate::parseDeviceInfo()
 {
+}
+
+HWND QDeviceWatcherPrivate::getHwnd()
+{
+    return hwnd;
 }
 
 #endif //Q_OS_WIN32
