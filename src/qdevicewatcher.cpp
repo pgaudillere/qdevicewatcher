@@ -96,7 +96,7 @@ void QDeviceWatcherPrivate::emitDeviceRemoved(const QString &dev)
 
 void QDeviceWatcherPrivate::emitDeviceAction(const QString &dev, const QString &action)
 {
-    zDebug("QDeviceWatcherPrivate::emitDeviceAction %s", action.toAscii().constData());
+    zDebug("QDeviceWatcherPrivate::emitDeviceAction %s", action.toLatin1().constData());
 	QString a(action.toLower());
 	if (a == QLatin1String("add"))
 		emitDeviceAdded(dev);
